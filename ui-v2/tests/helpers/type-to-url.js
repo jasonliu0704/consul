@@ -18,6 +18,11 @@ export default function(type) {
       url = '/v1/acl/list';
       // url = '/v1/acl/info/_';
       break;
+    case 'session':
+      url = function(url) {
+        return url.indexOf('/v1/session/node/') === 0;
+      };
+      break;
   }
   return url;
 }

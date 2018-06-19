@@ -33,6 +33,9 @@ export default function(assert) {
           case 'acls':
             model = 'acl';
             break;
+          case 'sessions':
+            model = 'session';
+            break;
         }
         cb(null, model);
       }, yadda)
@@ -214,6 +217,8 @@ export default function(assert) {
       ) {
         const _component = currentPage[component];
         const iterator = new Array(_component.length).fill(true);
+        // this will catch if we get aren't managing to select a component
+        assert.ok(iterator.length > 0);
         iterator.forEach(function(item, i, arr) {
           const actual = _component.objectAt(i)[property];
           const expected = yaml[i];
