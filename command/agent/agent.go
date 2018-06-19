@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/armon/go-metrics"
 	"github.com/armon/go-metrics/circonus"
 	"github.com/armon/go-metrics/datadog"
 	"github.com/armon/go-metrics/prometheus"
@@ -21,7 +20,6 @@ import (
 	"github.com/hashicorp/consul/command/flags"
 	"github.com/hashicorp/consul/lib"
 	"github.com/hashicorp/consul/logger"
-	"github.com/hashicorp/go-checkpoint"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/logutils"
 	"github.com/mitchellh/cli"
@@ -349,11 +347,13 @@ func (c *cmd) run(args []string) int {
 	agent.LogWriter = logWriter
 	agent.MemSink = memSink
 
+	c.UI.Output("Calling agnet Start()")
 	if err := agent.Start(); err != nil {
 		c.UI.Error(fmt.Sprintf("Error starting agent: %s", err))
 		return 1
 	}
 
+	c.UI.Output("Deferring agent shutdown")
 	// shutdown agent before endpoints
 	defer agent.ShutdownEndpoints()
 	defer agent.ShutdownAgent()
@@ -362,16 +362,19 @@ func (c *cmd) run(args []string) int {
 		c.startupUpdateCheck(config)
 	}
 
+	c.UI.Output("Start joinning")
 	if err := c.startupJoin(agent, config); err != nil {
 		c.UI.Error(err.Error())
 		return 1
 	}
 
+	c.UI.Output("Start joinning Wan")
 	if err := c.startupJoinWan(agent, config); err != nil {
 		c.UI.Error(err.Error())
 		return 1
 	}
 
+	c.UI.Output("StartSync")
 	// Let the agent know we've finished registration
 	agent.StartSync()
 
